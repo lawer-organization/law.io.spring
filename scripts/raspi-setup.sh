@@ -141,12 +141,19 @@ echo ""
 echo "🔧 6. Configuration"
 echo "----------------------------------------"
 
-# Créer le fichier .env
+# Créer le fichier .env (pour référence, non utilisé par systemd)
 cat > .env << 'EOF'
+# NOTE: Ce fichier n'est PAS utilisé par systemd
+# Les variables sont configurées directement dans le service systemd
+# Ce fichier sert uniquement de référence
+
 # Base de données
-SPRING_DATASOURCE_URL=jdbc:mysql://localhost:3306/law_batch?useSSL=false&serverTimezone=UTC
+SPRING_DATASOURCE_URL=jdbc:mysql://localhost:3306/law_batch?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
 SPRING_DATASOURCE_USERNAME=law_user
 SPRING_DATASOURCE_PASSWORD=law_password_2024
+
+# Hibernate Dialect (IMPORTANT pour MariaDB)
+SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT=org.hibernate.dialect.MariaDBDialect
 
 # Sécurité
 SECURITY_USER_USERNAME=admin
@@ -161,8 +168,8 @@ SPRING_BATCH_JOB_ENABLED=false
 LAW_DIRECTORIES_DATA=/var/law-data
 EOF
 
-echo "✅ Fichier .env créé"
-echo -e "${YELLOW}⚠️  Éditez .env pour mettre vos mots de passe${NC}"
+echo "✅ Fichier .env créé (référence seulement)"
+echo -e "${YELLOW}⚠️  Les variables sont configurées dans le service systemd${NC}"
 
 echo ""
 echo "🔨 7. Build du projet"
@@ -174,8 +181,10 @@ echo ""
 echo "🚀 8. Installation du service systemd"
 echo "----------------------------------------"
 
-# Créer le service systemd
-sudo tee /etc/systemd/system/law-spring-batch.service > /dev/null << EOF
+# Créer le service systemd avec variables en ligne
+# NOTE: EnvironmentFile ne fonctionne pas correctement avec systemd sur Raspberry Pi
+# On définit les variables directement avec Environment=
+sudo tee /etc/systemd/system/law-spring-batch.service > /dev/null << 'SERVICE'
 [Unit]
 Description=Law Spring Batch Application
 After=mariadb.service
@@ -183,10 +192,19 @@ Requires=mariadb.service
 
 [Service]
 Type=simple
-User=$USER
-WorkingDirectory=$INSTALL_DIR
-EnvironmentFile=$INSTALL_DIR/.env
-ExecStart=/usr/bin/java -jar $INSTALL_DIR/target/law-spring-batch-1.0.0-SNAPSHOT.jar
+User=pi
+WorkingDirectory=/opt/law-spring-batch
+Environment="SPRING_DATASOURCE_URL=jdbc:mysql://localhost:3306/law_batch?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true"
+Environment="SPRING_DATASOURCE_USERNAME=law_user"
+Environment="SPRING_DATASOURCE_PASSWORD=law_password_2024"
+Environment="SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT=org.hibernate.dialect.MariaDBDialect"
+Environment="SECURITY_USER_USERNAME=admin"
+Environment="SECURITY_USER_PASSWORD=change_me_in_production"
+Environment="SPRING_PROFILES_ACTIVE=prod"
+Environment="SERVER_PORT=8080"
+Environment="SPRING_BATCH_JOB_ENABLED=false"
+Environment="LAW_DIRECTORIES_DATA=/var/law-data"
+ExecStart=/usr/bin/java -Xms256m -Xmx800m -jar /opt/law-spring-batch/target/law-spring-batch-1.0.0-SNAPSHOT.jar
 Restart=on-failure
 RestartSec=10
 StandardOutput=journal
@@ -194,7 +212,7 @@ StandardError=journal
 
 [Install]
 WantedBy=multi-user.target
-EOF
+SERVICE
 
 # Recharger systemd
 sudo systemctl daemon-reload
@@ -212,7 +230,25 @@ echo ""
 echo -e "${GREEN}✅ Installation terminée !${NC}"
 echo ""
 echo "📝 Prochaines étapes:"
-echo "1. Éditer $INSTALL_DIR/.env avec vos mots de passe"
-echo "2. sudo systemctl start law-spring-batch"
-echo "3. Configurer les crons avec: ./scripts/raspi-install-crons.sh"
+echo "1. Modifier les mots de passe dans /etc/systemd/system/law-spring-batch.service"
+echo "   sudo nano /etc/systemd/system/law-spring-batch.service"
+echo "   Changer: SECURITY_USER_PASSWORD et SPRING_DATASOURCE_PASSWORD"
+echo ""
+echo "2. Recharger et démarrer le service"
+echo "   sudo systemctl daemon-reload"
+echo "   sudo systemctl start law-spring-batch"
+echo ""
+echo "3. Vérifier le démarrage (prend ~90 secondes)"
+echo "   sudo journalctl -u law-spring-batch -f"
+echo "   curl http://localhost:8080/actuator/health"
+echo ""
+echo "4. Configurer les crons automatiques"
+echo "   cd $INSTALL_DIR/scripts"
+echo "   ./raspi-install-crons.sh"
+echo ""
+echo "⚠️  IMPORTANT:"
+echo "   - Raspberry Pi 1GB RAM détecté"
+echo "   - Mémoire Java: -Xms256m -Xmx800m (optimisé)"
+echo "   - Temps de démarrage: ~90 secondes"
+echo "   - Dialect MariaDB configuré automatiquement"
 echo ""

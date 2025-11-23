@@ -4,10 +4,11 @@ Guide complet pour déployer Law Spring Batch sur Raspberry Pi.
 
 ## 📋 Prérequis
 
-- **Raspberry Pi 4** (4GB RAM minimum recommandé)
+- **Raspberry Pi 2/3/4** (1GB RAM minimum, 4GB recommandé)
 - **Système:** Raspberry Pi OS (64-bit recommandé)
 - **Connexion:** SSH ou accès direct
 - **Espace disque:** 10GB minimum disponible
+- **Note:** L'application fonctionne sur Raspberry Pi 1GB mais démarre lentement (~90 secondes)
 
 ## 🚀 Installation initiale
 
@@ -34,39 +35,56 @@ chmod +x raspi-setup.sh
 
 Le script va :
 - ✅ Installer Java 17, Maven, Git
-- ✅ Installer MySQL Server
+- ✅ Installer MariaDB Server (compatible MySQL)
+- ✅ Configurer le dialect Hibernate pour MariaDB
 - ✅ Créer la base de données `law_batch`
 - ✅ Cloner le projet
 - ✅ Build l'application
-- ✅ Créer le service systemd
+- ✅ Créer le service systemd avec mémoire optimisée
 - ✅ Configurer les répertoires de données
 
 ### 4. Configuration des mots de passe
 
-Éditez le fichier `.env` :
+**IMPORTANT:** Les variables sont configurées directement dans le service systemd.
+
+Éditez le service :
 
 ```bash
-cd /opt/law-spring-batch
-nano .env
+sudo nano /etc/systemd/system/law-spring-batch.service
 ```
 
 Changez **impérativement** :
-```properties
-SPRING_DATASOURCE_PASSWORD=<votre_mot_de_passe_mysql>
-SECURITY_USER_PASSWORD=<votre_mot_de_passe_api>
+```ini
+Environment="SPRING_DATASOURCE_PASSWORD=votre_nouveau_mot_de_passe"
+Environment="SECURITY_USER_PASSWORD=votre_nouveau_mot_de_passe_api"
 ```
+
+Rechargez la configuration :
+```bash
+sudo systemctl daemon-reload
+```
+
+**Note:** Le fichier `.env` existe mais n'est PAS utilisé par systemd (problème de compatibilité).
 
 ### 5. Démarrer l'application
 
 ```bash
 sudo systemctl start law-spring-batch
+```
+
+⏳ **Le démarrage prend environ 90 secondes sur Raspberry Pi 1GB.**
+
+Vérifier le statut :
+```bash
 sudo systemctl status law-spring-batch
 ```
 
-Vérifier les logs :
+Suivre les logs en temps réel :
 ```bash
 sudo journalctl -u law-spring-batch -f
 ```
+
+Attendre le message `Started LawSpringBatchApplication in X seconds`.
 
 ### 6. Tester l'application
 
@@ -326,29 +344,40 @@ sudo systemctl restart law-spring-batch
 ### L'application ne démarre pas
 
 ```bash
-# Voir les logs
-sudo journalctl -u law-spring-batch -n 100
+# Voir les logs détaillés
+sudo journalctl -u law-spring-batch -n 100 --no-pager
 
-# Vérifier la config
-cat /opt/law-spring-batch/.env
+# Erreur commune: "Unable to determine Dialect"
+# Solution: Vérifier que SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT est défini
+sudo grep DIALECT /etc/systemd/system/law-spring-batch.service
+# Doit contenir: Environment="SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT=org.hibernate.dialect.MariaDBDialect"
 
-# Tester la connexion MySQL
+# Tester la connexion MariaDB/MySQL
 mysql -u law_user -p law_batch -e "SELECT 1;"
+
+# Sur Raspberry Pi, root n'a pas de mot de passe par défaut
+sudo mysql -e "SELECT User, Host FROM mysql.user WHERE User = 'law_user';"
 ```
 
 ### Erreur de mémoire (OutOfMemoryError)
 
-Augmenter la heap Java dans le service :
+La configuration par défaut est optimisée pour Raspberry Pi 1GB :
+- **Raspberry Pi 1GB:** `-Xms256m -Xmx800m` (défaut)
+- **Raspberry Pi 2GB:** `-Xms512m -Xmx1536m`
+- **Raspberry Pi 4GB+:** `-Xms1G -Xmx3G`
+
+Modifier la mémoire :
 
 ```bash
 sudo nano /etc/systemd/system/law-spring-batch.service
 ```
 
 Modifier `ExecStart` :
-```
-ExecStart=/usr/bin/java -Xmx2G -jar /opt/law-spring-batch/target/law-spring-batch-1.0.0-SNAPSHOT.jar
+```ini
+ExecStart=/usr/bin/java -Xms512m -Xmx1536m -jar /opt/law-spring-batch/target/law-spring-batch-1.0.0-SNAPSHOT.jar
 ```
 
+Recharger et redémarrer :
 ```bash
 sudo systemctl daemon-reload
 sudo systemctl restart law-spring-batch
