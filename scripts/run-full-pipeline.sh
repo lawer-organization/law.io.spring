@@ -1,5 +1,5 @@
 #!/bin/bash
-# Script complet : fetch current + download + extract
+# Pipeline complet : fetch current/previous → download → OCR → extract → consolidate
 
 set -e
 
@@ -9,13 +9,24 @@ echo "🔄 === ÉTAPE 1: FETCH CURRENT ==="
 ./fetch-current.sh
 
 echo ""
-echo "📥 === ÉTAPE 2: DOWNLOAD PDFs ==="
-# Mettre à jour le statut en base pour correspondre aux fichiers existants
-docker exec law-mysql mysql -uroot -proot -D law_batch -e "UPDATE fetch_results SET status='DOWNLOADED' WHERE status='FETCHED';" 2>/dev/null || true
+echo "🔄 === ÉTAPE 2: FETCH PREVIOUS ==="
+./fetch-previous.sh
 
 echo ""
-echo "🔍 === ÉTAPE 3: OCR + EXTRACT ARTICLES ==="
+echo "📥 === ÉTAPE 3: DOWNLOAD PDFs ==="
+./download.sh
+
+echo ""
+echo "🔍 === ÉTAPE 4: OCR PROCESSING ==="
 ./ocr.sh
+
+echo ""
+echo "📝 === ÉTAPE 5: EXTRACT ARTICLES ==="
+./extract-articles.sh
+
+echo ""
+echo "📊 === ÉTAPE 6: CONSOLIDATION ==="
+./consolidate.sh
 
 echo ""
 echo "✅ Pipeline complet terminé!"
