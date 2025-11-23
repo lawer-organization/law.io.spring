@@ -182,7 +182,7 @@ sudo systemctl enable law-spring-batch
 sudo systemctl disable law-spring-batch
 ```
 
-### MySQL
+### MariaDB/MySQL
 
 ```bash
 # Se connecter
@@ -199,6 +199,9 @@ mysqldump -u law_user -p law_batch > backup_$(date +%Y%m%d).sql
 
 # Restore
 mysql -u law_user -p law_batch < backup_20250101.sql
+
+# Root sans mot de passe (Raspberry Pi)
+sudo mysql
 ```
 
 ### API REST (depuis le Raspberry Pi)

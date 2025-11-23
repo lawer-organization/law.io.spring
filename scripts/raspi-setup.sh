@@ -60,23 +60,23 @@ else
 fi
 
 echo ""
-echo "🗄️  2. Installation de MySQL"
+echo "🗄️  2. Installation de MariaDB (compatible MySQL)"
 echo "----------------------------------------"
 
 if ! command -v mysql &> /dev/null; then
-    echo "Installation de MySQL Server..."
-    sudo apt-get install -y mysql-server
+    echo "Installation de MariaDB Server..."
+    sudo apt-get install -y mariadb-server
     
-    # Démarrer MySQL
-    sudo systemctl start mysql
-    sudo systemctl enable mysql
+    # Démarrer MariaDB
+    sudo systemctl start mariadb
+    sudo systemctl enable mariadb
     
     echo -e "${YELLOW}"
-    echo "⚠️  IMPORTANT: Sécuriser MySQL"
+    echo "⚠️  IMPORTANT: Sécuriser MariaDB"
     echo "Exécuter après ce script: sudo mysql_secure_installation"
     echo -e "${NC}"
 else
-    echo "✅ MySQL déjà installé"
+    echo "✅ MariaDB/MySQL déjà installé"
 fi
 
 echo ""
@@ -86,11 +86,11 @@ echo "----------------------------------------"
 read -p "Voulez-vous créer la base de données maintenant? (y/n) " -n 1 -r
 echo
 if [[ $REPLY =~ ^[Yy]$ ]]; then
-    read -p "Entrez le mot de passe root MySQL: " -s MYSQL_ROOT_PASSWORD
-    echo
+    echo "Sur Raspberry Pi, MariaDB root n'a pas de mot de passe par défaut."
+    echo "Utilisation de sudo mysql..."
     
-    # Créer la base de données et l'utilisateur
-    sudo mysql -u root -p"$MYSQL_ROOT_PASSWORD" << EOF
+    # Créer la base de données et l'utilisateur (sans mot de passe root)
+    sudo mysql << EOF
 CREATE DATABASE IF NOT EXISTS law_batch CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 CREATE USER IF NOT EXISTS 'law_user'@'localhost' IDENTIFIED BY 'law_password_2024';
 GRANT ALL PRIVILEGES ON law_batch.* TO 'law_user'@'localhost';
@@ -178,8 +178,8 @@ echo "----------------------------------------"
 sudo tee /etc/systemd/system/law-spring-batch.service > /dev/null << EOF
 [Unit]
 Description=Law Spring Batch Application
-After=mysql.service
-Requires=mysql.service
+After=mariadb.service
+Requires=mariadb.service
 
 [Service]
 Type=simple
