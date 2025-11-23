@@ -1,0 +1,24 @@
+.DS_Store
+target/
+*.iml
+.idea/
+*.log
+data/
+src/database/data/pdfs/
+src/database/data/ocr/
+src/database/data/articles/
+src/database/data/output*.json
+src/database/*.txt
+
+# Environment variables (IMPORTANT - Ne jamais commiter)
+.env
+.env.local
+.env.production
+.env.*.local
+
+# Docker
+.dockerignore
+*.backup.sql
+
+# Large files (Tesseract model - download separately if needed)
+# src/main/resources/tessdata/fra.traineddata

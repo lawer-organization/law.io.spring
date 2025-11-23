@@ -1,0 +1,103 @@
+spring:
+  application:
+    name: law-spring-batch
+  
+  datasource:
+    url: ${DATABASE_URL:jdbc:mysql://localhost:3306/law_batch?createDatabaseIfNotExist=true&useSSL=true&serverTimezone=UTC&allowPublicKeyRetrieval=true}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: ${DATABASE_USERNAME:root}
+    password: ${DATABASE_PASSWORD:root}
+    hikari:
+      maximum-pool-size: 10
+      minimum-idle: 5
+      connection-timeout: 30000
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      keepalive-time: 300000
+      connection-test-query: SELECT 1
+  
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: ${SPRING_JPA_SHOW_SQL:false}
+    properties:
+      hibernate:
+        format_sql: ${SPRING_JPA_FORMAT_SQL:false}
+    open-in-view: false
+  
+  batch:
+    job:
+      enabled: false  # Disable auto-run on startup
+    jdbc:
+      initialize-schema: always  # Créer les tables Spring Batch si nécessaire
+
+  sql:
+    init:
+      mode: never  # Désactivé - schéma déjà existant
+
+server:
+  port: 8080
+
+# Spring Boot Actuator
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+      base-path: /actuator
+  endpoint:
+    health:
+      show-details: ${ACTUATOR_SHOW_DETAILS:when-authorized}
+  security:
+    enabled: true
+
+# Swagger/OpenAPI configuration
+springdoc:
+  api-docs:
+    path: /api-docs
+    enabled: true
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+    tags-sorter: alpha
+    operations-sorter: alpha
+  show-actuator: false
+
+# Application specific configuration
+law:
+  base-url: https://sgg.gouv.bj/doc
+  end-year: 1960  # Année de fin (la plus ancienne) pour le scan des années précédentes
+  max-number-per-year: 2000  # Nombre maximum de documents par année (loi-YYYY-1 à loi-YYYY-2000)
+  user-agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7; rv:115.0) Gecko/20100101 Firefox/115.0
+  
+  directories:
+    database: data
+    data: data
+  
+  http:
+    timeout: 30000
+    max-retries: 3
+  
+  ocr:
+    language: fra
+    dpi: 300
+    quality-threshold: 0.70
+  
+  batch:
+    chunk-size: 10
+    max-threads: 10  # Augmenté pour améliorer les performances des fetch
+    max-items-to-fetch-previous: 500  # Nombre maximum de documents à vérifier par exécution de fetch-previous (avec cursor pour continuité)
+    max-documents-to-extract: 10  # Nombre maximum de documents à extraire par exécution
+
+logging:
+  level:
+    root: ${LOG_LEVEL_ROOT:INFO}
+    bj.gouv.sgg: ${LOG_LEVEL_APP:INFO}
+    org.springframework.batch: ${LOG_LEVEL_BATCH:INFO}
+    org.springframework.batch.core.configuration.annotation.BatchObservabilityBeanPostProcessor: WARN
+    org.hibernate.SQL: ${LOG_LEVEL_SQL:INFO}
+    org.hibernate.tool.schema: ${LOG_LEVEL_SCHEMA:INFO}
+    org.hibernate.type.descriptor.sql.BasicBinder: ${LOG_LEVEL_BINDER:INFO}
+    org.springframework.security: ${LOG_LEVEL_SECURITY:INFO}
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"

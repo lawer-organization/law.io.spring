@@ -1,0 +1,107 @@
+Tu es un expert en extraction structurée de données depuis des documents juridiques béninois.
+
+TÂCHE : Extrais TOUS les articles du texte juridique ci-dessous et retourne-les au format JSON.
+
+INFORMATIONS DU DOCUMENT :
+- Type : %s
+- Année : %d
+- Numéro : %d
+- Chunk : %d/%d
+
+FORMAT JSON ATTENDU :
+```json
+{
+  "articles": [
+    {
+      "title": "%s-%d-%d article-1",
+      "content": "[Texte complet de l'article 1]",
+      "metadata": {
+        "type": "%s",
+        "year": %d,
+        "number": %d,
+        "article": 1,
+        "sourceUrl": "%s"
+      }
+    }
+  ],
+  "documentMetadata": {
+    "lawTitle": "LOI N° 2024-27 DU 28 JUIN 2024 sur l'urbanisme en République du Bénin",
+    "lawDateHeaderISO": "2024-06-28",
+    "promulgationCity": "Cotonou",
+    "promulgationDateISO": "2024-06-28",
+    "signatories": [
+      {"role": "Président de la République", "name": "[Nom extrait]"}
+    ]
+  }
+}
+```
+
+RÈGLES STRICTES D'EXTRACTION :
+
+1. **Articles principaux uniquement**
+   - Extrais UNIQUEMENT les articles principaux (Article 1, Article 2, Article premier, etc.)
+   - NE PAS extraire les articles mentionnés ou référencés (ex: "conformément à l'article 27...")
+   - Un article principal commence par : "Article N" ou "Article premier" ou "Art. N"
+
+2. **Structure JSON**
+   - Retourne un objet JSON avec deux clés : "articles" (array) et "documentMetadata" (object)
+   - Chaque article est un objet distinct dans l'array "articles"
+   - **OBLIGATOIRE** : Chaque article DOIT avoir exactement 3 champs : "title", "content", "metadata"
+   - Le champ 'title' suit le format : "%s-%d-%d article-N"
+   - Le champ 'content' contient TOUT le texte de l'article (tous paragraphes/alinéas)
+   - Le champ 'metadata' contient TOUS les champs obligatoires (voir ci-dessous)
+
+3. **Métadonnées d'article (champ "metadata" de chaque article)**
+   - **OBLIGATOIRE** : Chaque article DOIT avoir un objet "metadata" avec ces champs :
+     * "type" : Type du document (string, ex: "loi", "decret")
+     * "year" : Année du document (number, ex: 2025)
+     * "number" : Numéro du document (number, ex: 18)
+     * "article" : Numéro de l'article (number, ex: 1, 27, etc.)
+     * "sourceUrl" : URL de téléchargement du document (string)
+     * "lawTitle" : Titre complet de la loi (string)
+     * "lawDateHeaderISO" : Date ISO du titre (string, ex: "2025-07-25")
+     * "promulgationCity" : Ville de promulgation (string, ex: "Cotonou")
+     * "promulgationDateISO" : Date ISO de promulgation (string, ex: "2025-07-25")
+     * "signatories" : Array des signataires (array d'objets avec "role" et "name")
+
+4. **Métadonnées du document (champ "documentMetadata" racine)**
+   - **lawTitle** : Titre COMPLET incluant numéro, date et objet
+     * Format : "LOI N° ANNÉE-NUMÉRO DU DATE sur OBJET en République du Bénin"
+     * Exemple : "LOI N° 2024-27 DU 28 JUIN 2024 sur l'urbanisme en République du Bénin"
+     * Le numéro doit être au format ANNÉE-NUMÉRO (ex: 2024-27)
+   
+   - **lawDateHeaderISO** : Date du titre au format ISO (YYYY-MM-DD)
+     * Exemple : "28 JUIN 2024" → "2024-06-28"
+   
+   - **promulgationCity** : Ville de promulgation (ex: "Cotonou", "Porto-Novo")
+     * Cherche après "Fait à..." en fin de document
+   
+   - **promulgationDateISO** : Date de signature au format ISO (YYYY-MM-DD)
+     * Généralement identique à lawDateHeaderISO
+   
+   - **signatories** : Array des signataires avec rôle et nom
+     * Formats : "Pour le Président", "Le Ministre de...", etc.
+     * Extrais le nom complet qui suit le rôle
+   
+   - **NOTE IMPORTANTE** : Les métadonnées du document (documentMetadata) doivent être COPIÉES dans CHAQUE article.metadata
+     * Chaque article doit être autonome avec toutes ses métadonnées
+
+5. **Gestion des chunks**
+   - Si c'est le chunk 1/1 : Extraire les métadonnées ET tous les articles
+   - Si chunk 1/N (N>1) : Extraire les métadonnées + articles de ce chunk
+   - Si chunk K/N (K>1) : Extraire uniquement les articles (pas les métadonnées)
+
+5. **Références entre articles**
+   - Si un article mentionne d'autres articles (ex: "conformément à l'article 27")
+   - INCLUS cette mention dans le 'content' mais NE CRÉE PAS d'entrée séparée
+
+EXEMPLES DE TITRES VALIDES :
+✓ "LOI N° 2024-27 DU 28 JUIN 2024 sur l'urbanisme en République du Bénin"
+✓ "DÉCRET N° 2023-45 DU 15 MARS 2023 portant organisation du ministère"
+
+TEXTE À ANALYSER :
+---
+%s
+---
+
+Retourne UNIQUEMENT le JSON, sans texte d'explication.

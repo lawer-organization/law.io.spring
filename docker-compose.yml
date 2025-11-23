@@ -1,0 +1,86 @@
+version: '3.8'
+
+services:
+  # Base de données MySQL
+  mysql:
+    image: mysql:8.0
+    container_name: law-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DATABASE_PASSWORD:-root}
+      MYSQL_DATABASE: law_batch
+      MYSQL_USER: law_user
+      MYSQL_PASSWORD: ${DATABASE_PASSWORD:-root}
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - law-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${DATABASE_PASSWORD:-root}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Application Spring Boot
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: law-spring-app
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      # Sécurité
+      SECURITY_ENABLED: ${SECURITY_ENABLED:-true}
+      SECURITY_USER_NAME: ${SECURITY_USER_NAME:-admin}
+      SECURITY_USER_PASSWORD: ${SECURITY_USER_PASSWORD:-changeme}
+      
+      # Base de données
+      DATABASE_URL: jdbc:mysql://mysql:3306/law_batch?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+      DATABASE_USERNAME: law_user
+      DATABASE_PASSWORD: ${DATABASE_PASSWORD:-root}
+      
+      # Logs
+      LOG_LEVEL_ROOT: ${LOG_LEVEL_ROOT:-INFO}
+      LOG_LEVEL_APP: ${LOG_LEVEL_APP:-INFO}
+      LOG_LEVEL_SQL: ${LOG_LEVEL_SQL:-WARN}
+      
+      # JPA
+      SPRING_JPA_SHOW_SQL: ${SPRING_JPA_SHOW_SQL:-false}
+      SPRING_JPA_FORMAT_SQL: ${SPRING_JPA_FORMAT_SQL:-false}
+      
+      # Actuator
+      ACTUATOR_SHOW_DETAILS: ${ACTUATOR_SHOW_DETAILS:-when-authorized}
+      
+      # Spring Profile
+      SPRING_PROFILES_ACTIVE: production
+      
+      # Java Options
+      JAVA_OPTS: "-Xmx512m -Xms256m"
+    ports:
+      - "8080:8080"
+    volumes:
+      - app_data:/app/data
+      - ./logs:/app/logs
+    networks:
+      - law-network
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+volumes:
+  mysql_data:
+    driver: local
+  app_data:
+    driver: local
+
+networks:
+  law-network:
+    driver: bridge
