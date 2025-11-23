@@ -11,6 +11,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -38,7 +39,7 @@ public class FileResourceController {
      */
     @GetMapping("/pdfs")
     public ResponseEntity<Map<String, Object>> listPdfs() {
-        return listFiles("pdfs/loi", ".pdf");
+        return listFiles("pdfs" + File.separator + "loi", ".pdf");
     }
 
     /**
@@ -47,7 +48,7 @@ public class FileResourceController {
      */
     @GetMapping("/ocr")
     public ResponseEntity<Map<String, Object>> listOcrFiles() {
-        return listFiles("ocr/loi", ".txt");
+        return listFiles("ocr" + File.separator + "loi", ".txt");
     }
 
     /**
@@ -56,7 +57,7 @@ public class FileResourceController {
      */
     @GetMapping("/articles")
     public ResponseEntity<Map<String, Object>> listArticleFiles() {
-        return listFiles("articles/loi", ".json");
+        return listFiles("articles" + File.separator + "loi", ".json");
     }
 
     /**
@@ -66,7 +67,7 @@ public class FileResourceController {
      */
     @GetMapping("/pdfs/{filename:.+}")
     public ResponseEntity<Resource> downloadPdf(@PathVariable String filename) {
-        return downloadFile("pdfs/loi", filename, MediaType.APPLICATION_PDF);
+        return downloadFile("pdfs" + File.separator + "loi", filename, MediaType.APPLICATION_PDF);
     }
 
     /**
@@ -76,7 +77,7 @@ public class FileResourceController {
      */
     @GetMapping("/ocr/{filename:.+}")
     public ResponseEntity<Resource> downloadOcrFile(@PathVariable String filename) {
-        return downloadFile("ocr/loi", filename, MediaType.TEXT_PLAIN);
+        return downloadFile("ocr" + File.separator + "loi", filename, MediaType.TEXT_PLAIN);
     }
 
     /**
@@ -86,7 +87,7 @@ public class FileResourceController {
      */
     @GetMapping("/articles/{filename:.+}")
     public ResponseEntity<Resource> downloadArticleFile(@PathVariable String filename) {
-        return downloadFile("articles/loi", filename, MediaType.APPLICATION_JSON);
+        return downloadFile("articles" + File.separator + "loi", filename, MediaType.APPLICATION_JSON);
     }
 
     /**
@@ -97,7 +98,7 @@ public class FileResourceController {
     @GetMapping("/ocr/{filename:.+}/content")
     public ResponseEntity<Map<String, Object>> readOcrContent(@PathVariable String filename) {
         try {
-            Path filePath = Paths.get(dataDirectory, "ocr/loi", filename);
+            Path filePath = Paths.get(dataDirectory, "ocr" + File.separator + "loi", filename);
             
             if (!Files.exists(filePath)) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -136,7 +137,7 @@ public class FileResourceController {
     @GetMapping("/articles/{filename:.+}/content")
     public ResponseEntity<Object> readArticleContent(@PathVariable String filename) {
         try {
-            Path filePath = Paths.get(dataDirectory, "articles/loi", filename);
+            Path filePath = Paths.get(dataDirectory, "articles" + File.separator + "loi", filename);
             
             if (!Files.exists(filePath)) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -172,16 +173,16 @@ public class FileResourceController {
         Map<String, Object> stats = new HashMap<>();
 
         // Compter les PDFs
-        long pdfCount = countFiles("pdfs/loi", ".pdf");
-        long pdfSize = getTotalSize("pdfs/loi", ".pdf");
+        long pdfCount = countFiles("pdfs" + File.separator + "loi", ".pdf");
+        long pdfSize = getTotalSize("pdfs" + File.separator + "loi", ".pdf");
 
         // Compter les OCR
-        long ocrCount = countFiles("ocr/loi", ".txt");
-        long ocrSize = getTotalSize("ocr/loi", ".txt");
+        long ocrCount = countFiles("ocr" + File.separator + "loi", ".txt");
+        long ocrSize = getTotalSize("ocr" + File.separator + "loi", ".txt");
 
         // Compter les articles
-        long articleCount = countFiles("articles/loi", ".json");
-        long articleSize = getTotalSize("articles/loi", ".json");
+        long articleCount = countFiles("articles" + File.separator + "loi", ".json");
+        long articleSize = getTotalSize("articles" + File.separator + "loi", ".json");
 
         stats.put("pdfs", Map.of(
                 "count", pdfCount,
@@ -257,7 +258,7 @@ public class FileResourceController {
     private ResponseEntity<Resource> downloadFile(String subDirectory, String filename, MediaType mediaType) {
         try {
             // Validation du nom de fichier (sécurité)
-            if (filename.contains("..") || filename.contains("/") || filename.contains("\\")) {
+            if (filename.contains("..") || filename.contains(File.separator)) {
                 logger.warn("Invalid filename attempted: {}", filename);
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
             }
