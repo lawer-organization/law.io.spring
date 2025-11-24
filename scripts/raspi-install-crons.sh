@@ -113,8 +113,23 @@ cat > "$CRON_FILE" << EOF
 # Vérification santé (toutes les 5 minutes)
 */5 * * * * $CRON_DIR/health-check.sh
 
-# Pipeline complet toutes les 2 heures
-0 */2 * * * $CRON_DIR/full-pipeline.sh
+# Fetch current laws (tous les jours à 2h00)
+0 2 * * * $CRON_DIR/fetch-current.sh
+
+# Fetch previous laws (toutes les 3 heures, décalé)
+0 1-22/3 * * * $CRON_DIR/fetch-previous.sh
+
+# Download PDFs (toutes les 3 heures)
+0 */3 * * * $CRON_DIR/download-pdfs.sh
+
+# OCR Processing (toutes les 3 heures, décalé)
+0 */3 * * * $CRON_DIR/process-ocr.sh
+
+# Extract articles (toutes les 3 heures, décalé)
+0 1-22/3 * * * $CRON_DIR/extract-articles.sh
+
+# Full pipeline (tous les dimanches à 1h00)
+0 1 * * 0 $CRON_DIR/full-pipeline.sh
 
 # Rotation des logs (tous les jours à minuit)
 0 0 * * * find /var/log/law-*.log -mtime +30 -delete
@@ -134,11 +149,16 @@ echo ""
 echo "Toutes les 5 minutes:"
 echo "  → Health check (redémarre si DOWN)"
 echo ""
-echo "Toutes les 2 heures:"
-echo "  → Pipeline complet (fetch → download → OCR → extract)"
+echo "Toutes les 3 heures:"
+echo "  00:00, 03:00, 06:00... → Download PDFs + OCR Processing"
+echo "  01:00, 04:00, 07:00... → Fetch previous + Extract articles"
 echo ""
 echo "Tous les jours:"
 echo "  00:00 → Rotation des logs (supprime > 30 jours)"
+echo "  02:00 → Fetch current (nouvelles lois du jour)"
+echo ""
+echo "Toutes les semaines:"
+echo "  Dimanche 01:00 → Full pipeline (fetch → download → OCR → extract)"
 echo ""
 echo "📊 Logs disponibles:"
 echo "  /var/log/law-fetch-current.log"
