@@ -113,8 +113,8 @@ cat > "$CRON_FILE" << EOF
 # Vérification santé (toutes les 5 minutes)
 */5 * * * * $CRON_DIR/health-check.sh
 
-# Pipeline complet toutes les 30 minutes
-*/30 * * * * $CRON_DIR/full-pipeline.sh
+# Pipeline complet toutes les 2 heures
+0 */2 * * * $CRON_DIR/full-pipeline.sh
 
 # Rotation des logs (tous les jours à minuit)
 0 0 * * * find /var/log/law-*.log -mtime +30 -delete
@@ -134,7 +134,7 @@ echo ""
 echo "Toutes les 5 minutes:"
 echo "  → Health check (redémarre si DOWN)"
 echo ""
-echo "Toutes les 30 minutes:"
+echo "Toutes les 2 heures:"
 echo "  → Pipeline complet (fetch → download → OCR → extract)"
 echo ""
 echo "Tous les jours:"

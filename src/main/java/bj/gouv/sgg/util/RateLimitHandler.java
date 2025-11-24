@@ -136,24 +136,29 @@ public class RateLimitHandler {
      */
     private void adjustDelayBetweenRequests(double rate429) {
         if (rate429 >= CRITICAL_429_THRESHOLD) {
-            // > 50% de 429 : pause critique de 5 secondes entre requêtes
-            currentDelayBetweenRequests = 5000;
+            // > 50% de 429 : pause critique de 3 secondes entre requêtes
+            currentDelayBetweenRequests = 3000;
             log.warn("rate-limit-critical rate={} delayMs={}", 
                      String.format("%.2f", rate429), currentDelayBetweenRequests);
         } else if (rate429 >= HIGH_429_THRESHOLD) {
-            // > 30% de 429 : pause élevée de 2 secondes entre requêtes
-            currentDelayBetweenRequests = 2000;
+            // > 30% de 429 : pause élevée de 1 seconde entre requêtes
+            currentDelayBetweenRequests = 1000;
             log.warn("rate-limit-high rate={} delayMs={}", 
                      String.format("%.2f", rate429), currentDelayBetweenRequests);
-        } else if (rate429 > 0.1) {
-            // > 10% de 429 : pause modérée de 1 seconde
-            currentDelayBetweenRequests = 1000;
+        } else if (rate429 > 0.2) {
+            // > 20% de 429 : pause modérée de 500ms
+            currentDelayBetweenRequests = 500;
             log.info("rate-limit-moderate rate={} delayMs={}", 
                      String.format("%.2f", rate429), currentDelayBetweenRequests);
+        } else if (rate429 > 0.1) {
+            // > 10% de 429 : pause légère de 200ms
+            currentDelayBetweenRequests = 200;
+            log.info("rate-limit-low rate={} delayMs={}", 
+                     String.format("%.2f", rate429), currentDelayBetweenRequests);
         } else {
-            // < 10% de 429 : réduire progressivement le délai
-            currentDelayBetweenRequests = Math.max(0, currentDelayBetweenRequests - 500);
-            if (currentDelayBetweenRequests == 0) {
+            // < 10% de 429 : pas de délai
+            currentDelayBetweenRequests = 0;
+            if (rate429 > 0) {
                 log.info("rate-limit-ok rate={} delayMs=0", String.format("%.2f", rate429));
             }
         }
