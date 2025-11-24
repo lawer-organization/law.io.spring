@@ -1,6 +1,7 @@
 package bj.gouv.sgg.service;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -12,21 +13,22 @@ import java.nio.file.StandardOpenOption;
 /**
  * Service de stockage filesystem pour PDFs et OCR.
  * Structure:
- *   data/pdfs/{type}/{documentId}.pdf
- *   data/ocr/{type}/{documentId}.txt
+ *   {LAW_DIRECTORIES_DATA}/pdfs/{type}/{documentId}.pdf
+ *   {LAW_DIRECTORIES_DATA}/ocr/{type}/{documentId}.txt
  */
 @Service
 @Slf4j
 public class FileStorageService {
 
-    private static final String BASE_DATA_DIR = "data"; // relatif au répertoire d'exécution (projet)
+    @Value("${law.directories.data:data}")
+    private String baseDataDir;
 
     public Path pdfPath(String type, String documentId) {
-        return Path.of(BASE_DATA_DIR, "pdfs", type, documentId + ".pdf");
+        return Path.of(baseDataDir, "pdfs", type, documentId + ".pdf");
     }
 
     public Path ocrPath(String type, String documentId) {
-        return Path.of(BASE_DATA_DIR, "ocr", type, documentId + ".txt");
+        return Path.of(baseDataDir, "ocr", type, documentId + ".txt");
     }
 
     public boolean pdfExists(String type, String documentId) {
