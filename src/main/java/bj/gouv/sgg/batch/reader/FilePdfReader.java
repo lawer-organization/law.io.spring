@@ -51,26 +51,30 @@ public class FilePdfReader implements ItemReader<LawDocument> {
 
     private List<LawDocument> scanFilesystem() {
         List<LawDocument> list = new ArrayList<>();
-        Path base = Path.of("data", "pdfs", "loi"); // Pour l'instant seulement lois
-        if (!Files.exists(base)) {
-            return list;
-        }
-        try (var stream = Files.list(base)) {
-            stream.filter(p -> p.getFileName().toString().endsWith(".pdf"))
-                  .forEach(p -> {
-                      String filename = p.getFileName().toString();
-                      String id = filename.substring(0, filename.length() - 4); // retirer .pdf
-                      
-                      DocumentIdParser.ParsedDocument parsed = DocumentIdParser.parse(id);
-                      if (parsed != null && !fileStorageService.ocrExists(parsed.getType(), id)) {
-                          LawDocument doc = documentFactory.create(parsed.getType(), parsed.getYear(), parsed.getNumber());
-                          doc.setPdfPath(id);
-                          doc.setStatus(LawDocument.ProcessingStatus.DOWNLOADED);
-                          list.add(doc);
-                      }
-                  });
-        } catch (Exception e) {
-            log.error("Error scanning PDF directory: {}", e.getMessage());
+        // Scanner tous les types de documents (loi et decret)
+        for (String type : new String[]{"loi", "decret"}) {
+            Path base = fileStorageService.pdfPath(type, "").getParent();
+            if (!Files.exists(base)) {
+                log.debug("PDF directory does not exist: {}", base);
+                continue;
+            }
+            try (var stream = Files.list(base)) {
+                stream.filter(p -> p.getFileName().toString().endsWith(".pdf"))
+                      .forEach(p -> {
+                          String filename = p.getFileName().toString();
+                          String id = filename.substring(0, filename.length() - 4); // retirer .pdf
+                          
+                          DocumentIdParser.ParsedDocument parsed = DocumentIdParser.parse(id);
+                          if (parsed != null && !fileStorageService.ocrExists(parsed.getType(), id)) {
+                              LawDocument doc = documentFactory.create(parsed.getType(), parsed.getYear(), parsed.getNumber());
+                              doc.setPdfPath(id);
+                              doc.setStatus(LawDocument.ProcessingStatus.DOWNLOADED);
+                              list.add(doc);
+                          }
+                      });
+            } catch (Exception e) {
+                log.error("Error scanning PDF directory {}: {}", base, e.getMessage());
+            }
         }
         list.sort((a, b) -> {
             int yc = Integer.compare(b.getYear(), a.getYear());

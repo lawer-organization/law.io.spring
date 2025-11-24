@@ -211,6 +211,7 @@ Environment="SPRING_BATCH_JOB_ENABLED=false"
 Environment="LAW_DIRECTORIES_DATA=/home/pi/law-data"
 Environment="LAW_BATCH_MAX_THREADS=1"
 Environment="LAW_BATCH_CHUNK_SIZE=5"
+Environment="LAW_BATCH_MAX_DOCUMENTS_TO_EXTRACT=20"
 ExecStart=/usr/bin/java -Xms256m -Xmx800m -jar /home/pi/law-spring-batch/target/law-spring-batch-1.0.0-SNAPSHOT.jar
 Restart=on-failure
 RestartSec=10
