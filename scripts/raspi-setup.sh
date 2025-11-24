@@ -109,17 +109,19 @@ echo ""
 echo "📂 4. Création des répertoires"
 echo "----------------------------------------"
 
-# Répertoire d'installation
-INSTALL_DIR="/opt/law-spring-batch"
-DATA_DIR="/var/law-data"
+# Répertoires dans /home/pi
+INSTALL_DIR="/home/pi/law-spring-batch"
+DATA_DIR="/home/pi/law-data"
+CRON_DIR="/home/pi/law-cron-scripts"
 
-sudo mkdir -p "$INSTALL_DIR"
-sudo mkdir -p "$DATA_DIR"/{pdfs/loi,ocr/loi,articles/loi,output}
-sudo chown -R $USER:$USER "$DATA_DIR"
+mkdir -p "$INSTALL_DIR"
+mkdir -p "$DATA_DIR"/{pdfs/loi,ocr/loi,articles/loi,output}
+mkdir -p "$CRON_DIR"
 
 echo "✅ Répertoires créés:"
 echo "   - Installation: $INSTALL_DIR"
 echo "   - Données: $DATA_DIR"
+echo "   - Scripts cron: $CRON_DIR"
 
 echo ""
 echo "📥 5. Clonage du projet"
@@ -128,11 +130,10 @@ echo "----------------------------------------"
 if [ -d "$INSTALL_DIR/.git" ]; then
     echo "Mise à jour du projet..."
     cd "$INSTALL_DIR"
-    sudo -u $USER git pull
+    git pull
 else
     echo "Clonage du projet..."
-    sudo git clone https://github.com/lawer-organization/law.io.spring.git "$INSTALL_DIR"
-    sudo chown -R $USER:$USER "$INSTALL_DIR"
+    git clone https://github.com/lawer-organization/law.io.spring.git "$INSTALL_DIR"
 fi
 
 cd "$INSTALL_DIR"
@@ -165,7 +166,11 @@ SERVER_PORT=8080
 SPRING_BATCH_JOB_ENABLED=false
 
 # Répertoires
-LAW_DIRECTORIES_DATA=/var/law-data
+LAW_DIRECTORIES_DATA=/home/pi/law-data
+
+# Performance (Raspberry Pi optimisé)
+LAW_BATCH_MAX_THREADS=1
+LAW_BATCH_CHUNK_SIZE=5
 EOF
 
 echo "✅ Fichier .env créé (référence seulement)"
@@ -193,7 +198,7 @@ Requires=mariadb.service
 [Service]
 Type=simple
 User=pi
-WorkingDirectory=/opt/law-spring-batch
+WorkingDirectory=/home/pi/law-spring-batch
 Environment="SPRING_DATASOURCE_URL=jdbc:mysql://localhost:3306/law_batch?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true"
 Environment="SPRING_DATASOURCE_USERNAME=law_user"
 Environment="SPRING_DATASOURCE_PASSWORD=law_password_2024"
@@ -203,8 +208,10 @@ Environment="SECURITY_USER_PASSWORD=change_me_in_production"
 Environment="SPRING_PROFILES_ACTIVE=prod"
 Environment="SERVER_PORT=8080"
 Environment="SPRING_BATCH_JOB_ENABLED=false"
-Environment="LAW_DIRECTORIES_DATA=/var/law-data"
-ExecStart=/usr/bin/java -Xms256m -Xmx800m -jar /opt/law-spring-batch/target/law-spring-batch-1.0.0-SNAPSHOT.jar
+Environment="LAW_DIRECTORIES_DATA=/home/pi/law-data"
+Environment="LAW_BATCH_MAX_THREADS=1"
+Environment="LAW_BATCH_CHUNK_SIZE=5"
+ExecStart=/usr/bin/java -Xms256m -Xmx800m -jar /home/pi/law-spring-batch/target/law-spring-batch-1.0.0-SNAPSHOT.jar
 Restart=on-failure
 RestartSec=10
 StandardOutput=journal
@@ -243,12 +250,15 @@ echo "   sudo journalctl -u law-spring-batch -f"
 echo "   curl http://localhost:8080/actuator/health"
 echo ""
 echo "4. Configurer les crons automatiques"
-echo "   cd $INSTALL_DIR/scripts"
+echo "   cd ~/law-spring-batch/scripts"
 echo "   ./raspi-install-crons.sh"
 echo ""
 echo "⚠️  IMPORTANT:"
-echo "   - Raspberry Pi 1GB RAM détecté"
-echo "   - Mémoire Java: -Xms256m -Xmx800m (optimisé)"
+echo "   - Tout installé dans /home/pi/"
+echo "   - Installation: ~/law-spring-batch"
+echo "   - Données: ~/law-data"
+echo "   - Scripts cron: ~/law-cron-scripts"
+echo "   - Mémoire Java: -Xms256m -Xmx800m"
+echo "   - Threads: 1 (single-threaded pour éviter conflits)"
 echo "   - Temps de démarrage: ~90 secondes"
-echo "   - Dialect MariaDB configuré automatiquement"
 echo ""

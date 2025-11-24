@@ -330,7 +330,18 @@ public class BatchJobConfiguration {
     @Bean
     public TaskExecutor taskExecutor() {
         SimpleAsyncTaskExecutor executor = new SimpleAsyncTaskExecutor("law-batch-");
-        executor.setConcurrencyLimit(properties.getBatch().getMaxThreads());
+        
+        // Limite de threads basée sur la capacité de la machine
+        int maxThreads = properties.getBatch().getMaxThreads();
+        int availableProcessors = Runtime.getRuntime().availableProcessors();
+        
+        // Ne jamais dépasser le nombre de processeurs disponibles
+        int concurrencyLimit = Math.min(maxThreads, availableProcessors);
+        
+        log.info("TaskExecutor configuration: maxThreads={}, availableProcessors={}, concurrencyLimit={}", 
+                 maxThreads, availableProcessors, concurrencyLimit);
+        
+        executor.setConcurrencyLimit(concurrencyLimit);
         return executor;
     }
 }

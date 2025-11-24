@@ -13,7 +13,7 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m'
 
-INSTALL_DIR="/opt/law-spring-batch"
+INSTALL_DIR="$HOME/law-spring-batch"
 API_URL="http://localhost:8080/api/batch"
 API_USER="admin"
 
@@ -22,81 +22,85 @@ read -p "Entrez le mot de passe API (SECURITY_USER_PASSWORD): " -s API_PASSWORD
 echo ""
 
 # Créer le répertoire de scripts cron
-CRON_DIR="/opt/law-cron-scripts"
-sudo mkdir -p "$CRON_DIR"
+CRON_DIR="$HOME/law-cron-scripts"
+mkdir -p "$CRON_DIR"
 
 echo ""
 echo "📝 Création des scripts cron"
 echo "----------------------------"
 
+# Créer le répertoire de logs
+LOG_DIR="$HOME/law-logs"
+mkdir -p "$LOG_DIR"
+
 # Script 1: Fetch current laws (tous les jours à 2h00)
-sudo tee "$CRON_DIR/fetch-current.sh" > /dev/null << EOF
+tee "$CRON_DIR/fetch-current.sh" > /dev/null << EOF
 #!/bin/bash
 # Récupère les nouvelles lois du jour
-curl -X POST -u "$API_USER:$API_PASSWORD" \\
-  "$API_URL/fetch-current" \\
-  >> /var/log/law-fetch-current.log 2>&1
+curl -X POST -u "$API_USER:$API_PASSWORD" \
+  "$API_URL/fetch-current" \
+  >> $HOME/law-logs/fetch-current.log 2>&1
 EOF
 
 # Script 2: Fetch previous laws (tous les lundis à 3h00)
-sudo tee "$CRON_DIR/fetch-previous.sh" > /dev/null << EOF
+tee "$CRON_DIR/fetch-previous.sh" > /dev/null << EOF
 #!/bin/bash
 # Récupère les lois des 15 derniers jours
-curl -X POST -u "$API_USER:$API_PASSWORD" \\
-  "$API_URL/fetch-previous" \\
-  >> /var/log/law-fetch-previous.log 2>&1
+curl -X POST -u "$API_USER:$API_PASSWORD" \
+  "$API_URL/fetch-previous" \
+  >> $HOME/law-logs/fetch-previous.log 2>&1
 EOF
 
 # Script 3: Download PDFs (tous les jours à 4h00)
-sudo tee "$CRON_DIR/download-pdfs.sh" > /dev/null << EOF
+tee "$CRON_DIR/download-pdfs.sh" > /dev/null << EOF
 #!/bin/bash
 # Télécharge les PDFs depuis la base de données
-curl -X POST -u "$API_USER:$API_PASSWORD" \\
-  "$API_URL/download-pdfs" \\
-  >> /var/log/law-download.log 2>&1
+curl -X POST -u "$API_USER:$API_PASSWORD" \
+  "$API_URL/download-pdfs" \
+  >> $HOME/law-logs/download.log 2>&1
 EOF
 
 # Script 4: OCR Processing (tous les jours à 5h00)
-sudo tee "$CRON_DIR/process-ocr.sh" > /dev/null << EOF
+tee "$CRON_DIR/process-ocr.sh" > /dev/null << EOF
 #!/bin/bash
 # Traite les PDFs avec OCR
-curl -X POST -u "$API_USER:$API_PASSWORD" \\
-  "$API_URL/process-ocr" \\
-  >> /var/log/law-ocr.log 2>&1
+curl -X POST -u "$API_USER:$API_PASSWORD" \
+  "$API_URL/process-ocr" \
+  >> $HOME/law-logs/ocr.log 2>&1
 EOF
 
 # Script 5: Extract articles (tous les jours à 6h00)
-sudo tee "$CRON_DIR/extract-articles.sh" > /dev/null << EOF
+tee "$CRON_DIR/extract-articles.sh" > /dev/null << EOF
 #!/bin/bash
 # Extrait les articles depuis les fichiers OCR
-curl -X POST -u "$API_USER:$API_PASSWORD" \\
-  "$API_URL/extract-articles" \\
-  >> /var/log/law-extract.log 2>&1
+curl -X POST -u "$API_USER:$API_PASSWORD" \
+  "$API_URL/extract-articles" \
+  >> $HOME/law-logs/extract.log 2>&1
 EOF
 
 # Script 6: Full pipeline (tous les dimanches à 1h00)
-sudo tee "$CRON_DIR/full-pipeline.sh" > /dev/null << EOF
+tee "$CRON_DIR/full-pipeline.sh" > /dev/null << EOF
 #!/bin/bash
 # Pipeline complet: fetch → download → OCR → extract
-curl -X POST -u "$API_USER:$API_PASSWORD" \\
-  "$API_URL/full-pipeline" \\
-  >> /var/log/law-full-pipeline.log 2>&1
+curl -X POST -u "$API_USER:$API_PASSWORD" \
+  "$API_URL/full-pipeline" \
+  >> $HOME/law-logs/full-pipeline.log 2>&1
 EOF
 
 # Script 7: Health check (toutes les 5 minutes)
-sudo tee "$CRON_DIR/health-check.sh" > /dev/null << EOF
+tee "$CRON_DIR/health-check.sh" > /dev/null << EOF
 #!/bin/bash
 # Vérifie que l'application est UP
 HEALTH=\$(curl -s http://localhost:8080/actuator/health | jq -r '.status')
 if [ "\$HEALTH" != "UP" ]; then
-  echo "[ERROR] Application DOWN at \$(date)" >> /var/log/law-health.log
+  echo "[ERROR] Application DOWN at \$(date)" >> $HOME/law-logs/health.log
   # Redémarrer le service
   sudo systemctl restart law-spring-batch
 fi
 EOF
 
 # Rendre les scripts exécutables
-sudo chmod +x "$CRON_DIR"/*.sh
+chmod +x "$CRON_DIR"/*.sh
 
 echo "✅ Scripts créés dans $CRON_DIR"
 
@@ -132,7 +136,7 @@ cat > "$CRON_FILE" << EOF
 0 1 * * 0 $CRON_DIR/full-pipeline.sh
 
 # Rotation des logs (tous les jours à minuit)
-0 0 * * * find /var/log/law-*.log -mtime +30 -delete
+0 0 * * * find $HOME/law-logs/*.log -mtime +30 -delete
 
 EOF
 
@@ -161,18 +165,18 @@ echo "Toutes les semaines:"
 echo "  Dimanche 01:00 → Full pipeline (fetch → download → OCR → extract)"
 echo ""
 echo "📊 Logs disponibles:"
-echo "  /var/log/law-fetch-current.log"
-echo "  /var/log/law-fetch-previous.log"
-echo "  /var/log/law-download.log"
-echo "  /var/log/law-ocr.log"
-echo "  /var/log/law-extract.log"
-echo "  /var/log/law-full-pipeline.log"
-echo "  /var/log/law-health.log"
+echo "  ~/law-logs/fetch-current.log"
+echo "  ~/law-logs/fetch-previous.log"
+echo "  ~/law-logs/download.log"
+echo "  ~/law-logs/ocr.log"
+echo "  ~/law-logs/extract.log"
+echo "  ~/law-logs/full-pipeline.log"
+echo "  ~/law-logs/health.log"
 echo ""
 echo "🔍 Commandes utiles:"
 echo "  crontab -l              # Voir les crons"
 echo "  crontab -e              # Éditer les crons"
-echo "  tail -f /var/log/law-*.log  # Suivre les logs"
+echo "  tail -f ~/law-logs/*.log  # Suivre les logs"
 echo ""
 echo -e "${GREEN}✅ Installation des crons terminée !${NC}"
 echo ""
