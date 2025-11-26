@@ -35,6 +35,12 @@ spring:
     init:
       mode: never  # Désactivé - schéma déjà existant
 
+  # Task Scheduling
+  task:
+    scheduling:
+      pool:
+        size: ${SPRING_TASK_SCHEDULING_POOL_SIZE:1}  # 1 seul thread pour Raspberry Pi (jobs exécutés séquentiellement)
+
 server:
   port: 8080
 
@@ -88,6 +94,13 @@ law:
     max-threads: ${LAW_BATCH_MAX_THREADS:10}  # Augmenté pour améliorer les performances des fetch
     max-items-to-fetch-previous: 500  # Nombre maximum de documents à vérifier par exécution de fetch-previous (avec cursor pour continuité)
     max-documents-to-extract: ${LAW_BATCH_MAX_DOCUMENTS_TO_EXTRACT:50}  # Nombre maximum de documents OCR à traiter par exécution
+    job-timeout-hours: ${LAW_BATCH_JOB_TIMEOUT_HOURS:2}  # Timeout en heures pour considérer un job comme bloqué
+
+# Telegram notifications configuration
+telegram:
+  bot-token: ${TELEGRAM_BOT_TOKEN:}
+  chat-id: ${TELEGRAM_CHAT_ID:}
+  enabled: ${TELEGRAM_ENABLED:false}
 
 logging:
   level:

@@ -44,5 +44,6 @@ public class LawProperties {
         private int maxThreads;
         private int maxItemsToFetchPrevious = 5000; // Nombre maximum de documents à vérifier par exécution de fetch-previous
         private int maxDocumentsToExtract = 100; // Nombre maximum de documents à extraire par exécution
+        private int jobTimeoutHours = 2; // Timeout en heures pour considérer un job comme bloqué
     }
 }

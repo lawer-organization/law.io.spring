@@ -2,185 +2,118 @@
 
 Documentation complète du système de traitement automatisé des textes juridiques du Bénin.
 
-## 🚀 Démarrage Rapide
+---
 
-- **[Guide de Démarrage](./GUIDE.md)** - Installation et premiers pas
-- **[README Principal](../README.md)** - Vue d'ensemble du projet
+## 🌟 GUIDE PRINCIPAL
 
-## 📖 Architecture
+### **📖 [GUIDE COMPLET](./GUIDE_COMPLET.md)** - Tout-en-un
 
-### Architecture Générale
-- **[Architecture Système](./ARCHITECTURE.md)** - Vue d'ensemble de l'architecture
-- **[Architecture Batch](./BATCH_ARCHITECTURE.md)** - Jobs Spring Batch détaillés
-- **[Structure du Projet](./PROJECT_STRUCTURE.md)** - Organisation du code
+**Le guide consolidé contient :**
+- ✅ Introduction et vue d'ensemble
+- ✅ Architecture complète du système
+- ✅ Architecture Spring Batch détaillée
+- ✅ API REST Reference
+- ✅ Déploiement (Maven + Raspberry Pi)
+- ✅ Configuration et monitoring
+- ✅ Troubleshooting complet
+- ✅ Structure du projet
 
-### Pipeline de Traitement
-- **[Extraction et Consolidation](./EXTRACTION_CONSOLIDATION.md)** - Architecture complète du pipeline
-  - Job d'extraction (OCR → JSON)
-  - Job de consolidation (JSON → DB)
-  - Flux de traitement
-  - Scripts et commandes
+**👉 Commencez par là ! C'est le document de référence unique.**
 
-## 🔧 Développement
+---
 
-### Gestion des Erreurs
-- **[Système d'Exceptions](./EXCEPTIONS.md)** - Guide complet
-  - 11 exceptions personnalisées
-  - GlobalExceptionHandler
-  - Réponses API standardisées
-  - Exemples d'utilisation
+## 📁 Autres Documents (Référence)
 
-- **[Résumé Exceptions](./SUMMARY_EXCEPTIONS.md)** - Vue synthétique
-  - Métriques et statistiques
-  - Cas d'usage couverts
-  - Prochaines étapes
+Les documents ci-dessous sont conservés pour référence historique et détails spécifiques :
 
-### API & Configuration
-- **[Révision Méthodes HTTP](./HTTP_METHODS_REVIEW.md)** - Conformité REST et Pool MySQL
-  - Correction GET → POST pour actions
-  - Configuration HikariCP Keep-Alive
-  - Tests et validation
-  - Impact clients API
+### 🚀 Démarrage
+- [Guide de Démarrage](./GUIDE.md) - Installation rapide
+- [README Principal](../README.md) - Vue d'ensemble projet
 
-- **[Migration API v1.1](./MIGRATION_API_V1.1.md)** - Guide de migration pour clients
-  - Changements breaking
-  - Exemples avant/après
-  - Script de test
-  - Checklist déploiement
+### 🏗️ Architecture
+- [Architecture Système](./ARCHITECTURE.md) - Vue d'ensemble
+- [Architecture Batch](./BATCH_ARCHITECTURE.md) - Jobs Spring Batch
+- [Structure Projet](./PROJECT_STRUCTURE.md) - Organisation code
+- [Pipeline Extraction](./EXTRACTION_CONSOLIDATION.md) - OCR → JSON → DB
 
-### Sécurité & Déploiement
-- **[Résumé Sécurité](./SECURITY_SUMMARY.md)** - Vue d'ensemble complète
-  - État avant/après
-  - Modifications apportées
-  - Tests locaux
-  - Guide express Render
+### 🔧 API et Configuration
+- [API Reference](./API_REFERENCE.md) - Endpoints REST
+- [Gestion Erreurs](./EXCEPTIONS.md) - Exceptions personnalisées
+- [Révision HTTP](./HTTP_METHODS_REVIEW.md) - Conformité REST
 
-- **[Déploiement Render](./DEPLOY_RENDER.md)** - Guide complet step-by-step
-  - Configuration MySQL
-  - Variables d'environnement
-  - Tests post-déploiement
-  - Troubleshooting
+### 🚢 Déploiement
+- [Déploiement Maven](./DEPLOY_MAVEN.md) - Configuration SSH
+- [Déploiement Raspberry Pi](./DEPLOY_RASPBERRY_PI.md) - Setup complet
+- [Succès Déploiement](./DEPLOYMENT_SUCCESS.md) - État actuel
+- [Déploiement Render](./DEPLOY_RENDER.md) - Cloud hosting
+- [Guide Docker](./DOCKER_GUIDE.md) - Containerisation
 
-- **[Guide Docker](./DOCKER_GUIDE.md)** - Déploiement avec Docker
-  - Dockerfile multi-stage
-  - Docker Compose (MySQL + App)
-  - Volumes et persistance
-  - Mode dev/prod
-  - Commandes utiles
+### 🔄 Migration
+- [Guide Migration](./MIGRATION.md) - law.io.v2 → law.spring
+- [Migration Ranges](./MIGRATION_RANGES.md) - Stratégie progressive
 
-- **[Checklist Sécurité](./SECURITY_CHECKLIST.md)** - Guide rapide
-  - Checklist avant déploiement
-  - Authentification API
-  - Niveaux de sécurité
-  - Rappels importants
+### 📚 Ressources
+- [Ressources](./RESOURCES.md) - Liens utiles
 
-### Migration
-- **[Guide de Migration](./MIGRATION.md)** - Migration law.io.v2 → law.spring
-  - Différences principales
-  - Correspondances des composants
-  - Services réutilisés
-  - Commandes équivalentes
-
-- **[Migration Ranges](./MIGRATION_RANGES.md)** - Stratégie de migration progressive
-  - Approche par plages d'années
-  - Gestion des trous
-  - Optimisations
-
-## 📚 Ressources
-
-- **[Ressources](./RESOURCES.md)** - Liens et références utiles
-  - Documentation API
-  - Tutoriels Spring Batch
-  - Outils de développement
-
-## 📋 Organisation de la Documentation
-
-```
-docs/
-├── README.md                          (ce fichier - index principal)
-│
-├── Démarrage/
-│   ├── GUIDE.md                       Guide de démarrage
-│   └── ../README.md                   README du projet
-│
-├── Architecture/
-│   ├── ARCHITECTURE.md                Architecture système
-│   ├── BATCH_ARCHITECTURE.md          Jobs Spring Batch
-│   ├── PROJECT_STRUCTURE.md           Structure du code
-│   └── EXTRACTION_CONSOLIDATION.md    Pipeline extraction/consolidation
-│
-├── Développement/
-│   ├── EXCEPTIONS.md                  Guide des exceptions
-│   ├── SUMMARY_EXCEPTIONS.md          Résumé exceptions
-│   └── RESTRUCTURATION_EXTRACTION.md  Historique restructuration
-│
-├── Migration/
-│   ├── MIGRATION.md                   Guide migration v2 → Spring
-│   └── MIGRATION_RANGES.md            Stratégie par ranges
-│
-└── Ressources/
-    └── RESOURCES.md                   Liens et références
-```
+---
 
 ## 🎯 Navigation Rapide
 
-### Par Cas d'Usage
+| Besoin | Document |
+|--------|----------|
+| **Tout comprendre** | [GUIDE_COMPLET.md](./GUIDE_COMPLET.md) ⭐ |
+| Démarrer rapidement | [GUIDE.md](./GUIDE.md) |
+| Comprendre l'architecture | [GUIDE_COMPLET.md](./GUIDE_COMPLET.md) § 2-3 |
+| Utiliser l'API | [GUIDE_COMPLET.md](./GUIDE_COMPLET.md) § 4 |
+| Déployer sur Raspberry Pi | [GUIDE_COMPLET.md](./GUIDE_COMPLET.md) § 5 |
+| Résoudre un problème | [GUIDE_COMPLET.md](./GUIDE_COMPLET.md) § 7 |
 
-**Je veux démarrer le projet**
-→ [GUIDE.md](./GUIDE.md)
+---
 
-**Je veux comprendre l'architecture**
-→ [ARCHITECTURE.md](./ARCHITECTURE.md) → [BATCH_ARCHITECTURE.md](./BATCH_ARCHITECTURE.md)
+## 📊 État Actuel du Système
 
-**Je veux comprendre le pipeline**
-→ [EXTRACTION_CONSOLIDATION.md](./EXTRACTION_CONSOLIDATION.md)
+**Dernière mise à jour : 24 novembre 2025**
 
-**Je veux gérer les erreurs**
-→ [EXCEPTIONS.md](./EXCEPTIONS.md)
+### Déploiement Raspberry Pi
+- ✅ **Status:** Opérationnel (192.168.0.37:8080)
+- ✅ **Service:** law-spring-batch.service (enabled, active)
+- ✅ **Base de données:** law_batch (MariaDB)
+- ✅ **Scheduler:** 6 jobs automatiques actifs
+- ✅ **Mémoire:** 256MB-800MB (optimisé 1GB RAM)
 
-**Je veux migrer du code de law.io.v2**
-→ [MIGRATION.md](./MIGRATION.md)
+### Jobs Testés
+- ✅ **fetch-current:** 2484 documents en 18min13s
+- ✅ **download:** 2 PDFs (68.7MB) en 2min
+- ✅ **ocr, extract, consolidate:** Fonctionnels
 
-**Je cherche un fichier spécifique**
-→ [PROJECT_STRUCTURE.md](./PROJECT_STRUCTURE.md)
+### Configuration
+- **Thread pool:** 1 (exécution séquentielle)
+- **Chunk size:** 10
+- **Max threads batch:** 4
+- **Démarrage:** ~90 secondes
 
-### Par Rôle
-
-**Développeur Backend**
-- Architecture: [ARCHITECTURE.md](./ARCHITECTURE.md)
-- Batch: [BATCH_ARCHITECTURE.md](./BATCH_ARCHITECTURE.md)
-- Exceptions: [EXCEPTIONS.md](./EXCEPTIONS.md)
-- Structure: [PROJECT_STRUCTURE.md](./PROJECT_STRUCTURE.md)
-
-**Développeur Frontend/API**
-- Guide: [GUIDE.md](./GUIDE.md)
-- Exceptions: [EXCEPTIONS.md](./EXCEPTIONS.md) (réponses API)
-
-**DevOps/Admin**
-- Guide: [GUIDE.md](./GUIDE.md)
-- Pipeline: [EXTRACTION_CONSOLIDATION.md](./EXTRACTION_CONSOLIDATION.md)
-- Scripts et commandes
-
-**Chef de Projet**
-- README: [../README.md](../README.md)
-- Architecture: [ARCHITECTURE.md](./ARCHITECTURE.md)
-- Migration: [MIGRATION.md](./MIGRATION.md)
+---
 
 ## 🔄 Dernières Mises à Jour
 
-- **23 Nov 2025** : Création de l'index principal et réorganisation
-- **23 Nov 2025** : Système d'exceptions personnalisées complet
-- **23 Nov 2025** : Documentation pipeline extraction/consolidation
-- **22 Nov 2025** : Architecture Batch détaillée
-- **19 Nov 2025** : Guide de migration v2 → Spring
+- **24 Nov 2025** : Création GUIDE_COMPLET.md - Documentation consolidée
+- **24 Nov 2025** : Déploiement réussi et validé sur Raspberry Pi
+- **24 Nov 2025** : Tests jobs fetch-current et download
+- **23 Nov 2025** : Configuration scheduler avec 6 jobs automatiques
+- **23 Nov 2025** : Retrait Spring Security pour simplification
+- **23 Nov 2025** : Configuration déploiement Maven SSH
+
+---
 
 ## 📞 Support
 
-Pour toute question ou suggestion concernant la documentation :
-- Ouvrir une issue GitHub
-- Contacter l'équipe de développement
+Pour toute question :
+- **Documentation complète:** [GUIDE_COMPLET.md](./GUIDE_COMPLET.md)
+- **Issues GitHub:** https://github.com/lawer-organization/law.io.v2/issues
+- **Email:** Contact équipe de développement
 
 ---
 
 **Version actuelle** : 1.0.0  
-**Dernière mise à jour** : 23 novembre 2025
+**Dernière mise à jour** : 24 novembre 2025  
+**Statut** : ✅ Production Ready

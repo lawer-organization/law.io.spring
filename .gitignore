@@ -13,6 +13,8 @@ src/database/*.txt
 # Environment variables (IMPORTANT - Ne jamais commiter)
 .env
 .env.local
+.env.prod
+.env.raspi
 .env.production
 .env.*.local
 

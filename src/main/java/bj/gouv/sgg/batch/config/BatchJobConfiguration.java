@@ -1,5 +1,6 @@
 package bj.gouv.sgg.batch.config;
 
+import bj.gouv.sgg.batch.listener.TelegramJobExecutionListener;
 import bj.gouv.sgg.batch.processor.ArticleExtractionProcessor;
 import bj.gouv.sgg.batch.processor.ConsolidationProcessor;
 import bj.gouv.sgg.batch.processor.DownloadProcessor;
@@ -51,6 +52,7 @@ public class BatchJobConfiguration {
     private final LawProperties properties;
     private final JobRepository jobRepository;
     private final PlatformTransactionManager transactionManager;
+    private final TelegramJobExecutionListener telegramJobExecutionListener;
     
     // ========================================================================
     // FETCH CURRENT YEAR JOB - Scan complet de l'année en cours
@@ -61,6 +63,7 @@ public class BatchJobConfiguration {
         return new JobBuilder("fetchCurrentJob", jobRepository)
             .incrementer(new RunIdIncrementer())
             .start(fetchCurrentStep)
+            .listener(telegramJobExecutionListener)
             .build();
     }
     
@@ -103,6 +106,7 @@ public class BatchJobConfiguration {
         return new JobBuilder("fetchPreviousJob", jobRepository)
             .incrementer(new RunIdIncrementer())
             .start(fetchPreviousStep)
+            .listener(telegramJobExecutionListener)
             .build();
     }
     
@@ -135,6 +139,7 @@ public class BatchJobConfiguration {
             .incrementer(new RunIdIncrementer())
             .start(fetchCurrentStep)
             .next(fetchPreviousStep)
+            .listener(telegramJobExecutionListener)
             .build();
     }
     
@@ -148,6 +153,7 @@ public class BatchJobConfiguration {
         return new JobBuilder("fetchJob", jobRepository)
             .incrementer(new RunIdIncrementer())
             .start(fetchStep)
+            .listener(telegramJobExecutionListener)
             .build();
     }
     
@@ -173,6 +179,7 @@ public class BatchJobConfiguration {
         return new JobBuilder("downloadJob", jobRepository)
             .incrementer(new RunIdIncrementer())
             .start(downloadStep)
+            .listener(telegramJobExecutionListener)
             .build();
     }
     
@@ -202,6 +209,7 @@ public class BatchJobConfiguration {
         return new JobBuilder("ocrJob", jobRepository)
             .incrementer(new RunIdIncrementer())
             .start(ocrStep)
+            .listener(telegramJobExecutionListener)
             .build();
     }
     
@@ -227,6 +235,7 @@ public class BatchJobConfiguration {
         return new JobBuilder("articleExtractionJob", jobRepository)
             .incrementer(new RunIdIncrementer())
             .start(articleExtractionStep)
+            .listener(telegramJobExecutionListener)
             .build();
     }
     
@@ -251,6 +260,7 @@ public class BatchJobConfiguration {
         return new JobBuilder("consolidateJob", jobRepository)
             .incrementer(new RunIdIncrementer())
             .start(consolidateStep)
+            .listener(telegramJobExecutionListener)
             .build();
     }
     
@@ -280,6 +290,7 @@ public class BatchJobConfiguration {
             .start(singleDocumentFetchStep)
             .next(singleDocumentDownloadStep)
             .next(singleDocumentOcrStep)
+            .listener(telegramJobExecutionListener)
             .build();
     }
     
