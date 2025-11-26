@@ -85,7 +85,7 @@ HEADER
     done < "$ENV_FILE"
 
     cat << 'FOOTER'
-ExecStart=/usr/bin/java -Xms256m -Xmx800m -jar /home/pi/law-spring/law-spring-batch-1.0.0-SNAPSHOT.jar
+ExecStart=/usr/bin/java -Xms128m -Xmx512m -jar /home/pi/law-spring/law-spring-batch-1.0.0-SNAPSHOT.jar
 Restart=on-failure
 RestartSec=10
 StandardOutput=journal

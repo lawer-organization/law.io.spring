@@ -8,6 +8,7 @@ import bj.gouv.sgg.batch.processor.ExtractionProcessor;
 import bj.gouv.sgg.batch.processor.FetchProcessor;
 import bj.gouv.sgg.batch.reader.ConsolidationReader;
 import bj.gouv.sgg.batch.reader.CurrentYearLawDocumentReader;
+import bj.gouv.sgg.batch.reader.DownloadedDocumentReader;
 import bj.gouv.sgg.batch.reader.FetchedDocumentReader;
 import bj.gouv.sgg.batch.reader.LawDocumentReader;
 import bj.gouv.sgg.batch.reader.FilePdfReader;
@@ -214,7 +215,7 @@ public class BatchJobConfiguration {
     }
     
     @Bean
-    public Step ocrStep(FilePdfReader reader,
+    public Step ocrStep(DownloadedDocumentReader reader,
                         ExtractionProcessor processor,
                         ExtractionWriter extractionWriter) {
         return new StepBuilder("ocrStep", jobRepository)
